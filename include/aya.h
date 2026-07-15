@@ -150,6 +150,8 @@ namespace aya {
 		bool do_compress;
 		int format;
 		int lenient_count;
+		bool flip_enableH;
+		bool flip_enableV;
 
 		bool verbose;
 	};

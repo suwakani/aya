@@ -47,6 +47,8 @@ int main(int argc,const char* argv[]) {
 	int param_aga_leniency = 0;
 	
 	int param_age_leniency = 0;
+	bool param_age_flipenable_h = false;
+	bool param_age_flipenable_v = false;
 
 	int param_agi_subimageX = 0;
 	int param_agi_subimageY = 0;
@@ -142,6 +144,12 @@ int main(int argc,const char* argv[]) {
 	// AGE-specific
 	if(argparser.arg_isValid("-age_leniency",1)) {
 		param_age_leniency = std::stoi(argparser.arg_get("-age_leniency",1).at(1));
+	}
+	if(argparser.arg_isValid("-age_flipenable_h")) {
+		param_age_flipenable_h = true;
+	}
+	if(argparser.arg_isValid("-age_flipenable_v")) {
+		param_age_flipenable_v = true;
 	}
 
 	// AGI-specific
@@ -427,6 +435,8 @@ int main(int argc,const char* argv[]) {
 			.do_compress = do_compress,
 			.format = pixelfmt_flags,
 			.lenient_count = param_age_leniency,
+			.flip_enableH = param_age_flipenable_h,
+			.flip_enableV = param_age_flipenable_v,
 			.verbose = do_verbose
 		};
 		auto pic_blob = aya::convert_fileAGE(param_srcfile,info);
@@ -592,6 +602,8 @@ static void disp_usage() {
 		"\t\tformats: i4,i8,rgb\n"
 		"\t\tTakes in a .xml as its source file!\n"
 		"\t\t-age_leniency <n>       if enabled, each object allows at least <n> empty characters\n"
+		"\t\t-age_flipenable_h       enables h-flipping of each sprite\n"
+		"\t\t-age_flipenable_v       enables v-flipping of each sprite\n"
 		"\t.AGI specifics:\n"
 		"\t\tformats: i4,i8,rgb\n"
 		"\t\t-agi_subimage <x> <y>   divides image into subimages, each with size (x,y)\n"

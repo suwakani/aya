@@ -144,12 +144,10 @@ auto aya::CKmapJSON::transform_rotate(int deg90) -> void {
 			}
 
 			// rotate new dimensions ----------------------------@/
-			if((deg90%2) == 1) {
-				int new_width = height();
-				int new_height = width();
-				m_width = new_width;
-				m_height = new_height;
-			}
+			int new_width = height();
+			int new_height = width();
+			m_width = new_width;
+			m_height = new_height;
 
 			break;
 		}
@@ -1598,9 +1596,17 @@ auto aya::convert_fileAGE(const std::string& filename_xml, const aya::CAliceAGEC
 
 	size_t bmpsection_sizeOrig;
 
+	const std::array<bool,4> flip_enableTable = {
+		true,
+		info.flip_enableH,
+		info.flip_enableV,
+		info.flip_enableH && info.flip_enableV
+	};
+
 	// load cels ----------------------------------------@/
 	struct PhotoInfo {
 		std::vector<aya::ALICE_AGEFILE_PART> filepart_list;
+		std::vector<uint64_t> filepart_listPhotoHash;
 		CAGBSubframeList agb_subframeList;
 		size_t cel_size;
 		size_t cel_offset;
@@ -1612,10 +1618,15 @@ auto aya::convert_fileAGE(const std::string& filename_xml, const aya::CAliceAGEC
 		auto agb_subframeList = CAGBSubframeList(partphoto,info.lenient_count);
 		
 		std::vector<aya::ALICE_AGEFILE_PART> filepart_list;
+		std::vector<uint64_t> filepart_listPhotoHash;
 
 		size_t cel_size = 0;
 		size_t cel_id = 0;
 		for(auto agb_subframe : agb_subframeList.m_subframes) {
+			/*
+				as a temporary variable, we set the part's per-frame cel ID to
+				the size of its part.
+			*/
 			// get attribute ----------------------------@/
 			int attr_bpp = (aya::alice_graphfmt::getBPP(format) == 8) ? 1 : 0;
 
@@ -1637,6 +1648,8 @@ auto aya::convert_fileAGE(const std::string& filename_xml, const aya::CAliceAGEC
 				(agb_subframe.m_sizeX) |
 				(agb_subframe.m_sizeY) << 8;
 
+			filepart_listPhotoHash.push_back(subframephoto.hash_getIndexed(0));
+
 			// write cels -------------------------------@/
 			size_t subframe_celSize = 0;
 			auto celtable = subframephoto.rect_split(8,8);
@@ -1655,6 +1668,7 @@ auto aya::convert_fileAGE(const std::string& filename_xml, const aya::CAliceAGEC
 
 		photoinfo.cel_size = cel_size;
 		photoinfo.filepart_list = filepart_list;
+		photoinfo.filepart_listPhotoHash = filepart_listPhotoHash;
 		photoinfo.agb_subframeList = agb_subframeList;
 		tbl_photoinfo.push_back(photoinfo);
 	}
@@ -1669,6 +1683,10 @@ auto aya::convert_fileAGE(const std::string& filename_xml, const aya::CAliceAGEC
 
 		// write frames ---------------------------------@/
 		for(auto frame : pattern.m_frames) {
+			/*
+				*	for per-frame business, parts' photos need to be hashed.
+				*	this is what map_perframeHashes is for.
+			*/
 			aya::ALICE_AGEFILE_FRAME fileframe = {};
 			fileframe.delay = frame.m_delayFrame;
 			fileframe.name_offset = blob_segStrings.size();
@@ -1676,11 +1694,14 @@ auto aya::convert_fileAGE(const std::string& filename_xml, const aya::CAliceAGEC
 
 			// queue up parts to write ------------------@/
 			std::vector<aya::ALICE_AGEFILE_PART> partqueue;
+			std::map<uint64_t,size_t> map_perframeHashes;
 			int celidbase_PF = 0;
+
 			for(auto part : frame.m_parts) {
 				auto photoinfo = tbl_photoinfo.at(part.m_imgID);
 				auto filepart_list = photoinfo.filepart_list;
 				
+				size_t srcpart_index = 0;
 				for(const auto& srcpart : filepart_list) {
 					aya::ALICE_AGEFILE_PART filepart = srcpart;
 					const int sizedat = filepart.size_xy;
@@ -1708,11 +1729,28 @@ auto aya::convert_fileAGE(const std::string& filename_xml, const aya::CAliceAGEC
 						filepart.pos_y += part.m_posY;
 					}
 
-					int celid_PF_offset = celidbase_PF;
-					celidbase_PF += filepart.cel_idPerFrame;
-					filepart.cel_idPerFrame = celid_PF_offset;
+					/*
+						*	NOTE: this is wrong. this wouldn't work for parts
+							that are flipped, as it always increments, even if
+							it's a previously-used part!
+						*	TODO: can using a map-like method deal with this?
+						*	for example, when we iterate through each hw part,
+							check if its photo was used previously. yes, this
+							involves assigning a photo to each part in the
+							photoinfo's vector.
+					*/
+					auto photohash = photoinfo.filepart_listPhotoHash.at(srcpart_index);
+					if(map_perframeHashes.contains(photohash)) {
+						filepart.cel_idPerFrame = map_perframeHashes.at(photohash);
+					} else {
+						int celid_touse = celidbase_PF;
+						map_perframeHashes[photohash] = celid_touse;
+						celidbase_PF += filepart.cel_idPerFrame;
+						filepart.cel_idPerFrame = celid_touse;
+					}
 
 					partqueue.push_back(filepart);
+					srcpart_index++;
 				}
 			}
 
@@ -1720,7 +1758,12 @@ auto aya::convert_fileAGE(const std::string& filename_xml, const aya::CAliceAGEC
 			fileframe.part_count = partqueue.size();
 			for(int i=0; i<4; i++) {
 				// write offset
-				fileframe.part_idx[i] = numtotal_parts;
+				if(flip_enableTable.at(i)) {
+					fileframe.part_idx[i] = numtotal_parts;
+				} else {
+					fileframe.part_idx[i] = fileframe.part_idx[0];
+					continue;
+				}
 
 				// write objects, flipped & nonflipped
 				int flip_h = (i&1);
@@ -1819,6 +1862,11 @@ auto aya::convert_fileAGE(const std::string& filename_xml, const aya::CAliceAGEC
 	blob_segPart.pad(pad_size,pad_word);
 	blob_segBmp.pad(pad_size,pad_word);
 	blob_segPalet.pad(pad_size,pad_word);
+
+	// print verbose log --------------------------------@/
+	if(info.verbose) {
+		std::printf("file '%48s': bmp segment == %8.4fKB\n",filename_xml.c_str(),((float)blob_segBmp.size()) / 1024.0);
+	}
 
 	// create header ------------------------------------@/
 	size_t header_size = 96;
