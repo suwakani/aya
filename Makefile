@@ -2,9 +2,10 @@
 CXX	:= clang++
 CC	:= clang
 
-CBASEFLAGS	:= -MMD -MP -O2
-CBASEFLAGS	+= -Wall -Wshadow -Werror
-CBASEFLAGS	+= -Iinclude -I./deps/scl/libscl/include
+CBASEFLAGS := -MMD -MP -O2
+CBASEFLAGS += -Wall -Wshadow -Werror
+CBASEFLAGS += -Iinclude -I./deps/scl/libscl/include
+CBASEFLAGS += -g
 
 CFLAGS := $(CBASEFLAGS)
 
@@ -12,7 +13,6 @@ CXXFLAGS := -std=c++23
 CXXFLAGS += $(CBASEFLAGS)
 CXXFLAGS += -Wnull-dereference
 
-#LDFLAGS	:= -lfreeimage -lz
 LDFLAGS := -L./deps/scl/libscl/bin
 LDFLAGS	+= -lz -ltinyxml -lscl
 LIBSCL_A := ./deps/scl/libscl/bin/libscl.a
