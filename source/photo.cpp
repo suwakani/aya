@@ -1,6 +1,7 @@
 #include <aya.h>
 #include <lodepng.h>
 #include <stdexcept>
+#include <iostream>
 
 namespace aya {
 	CPhoto::CPhoto() {
@@ -29,9 +30,15 @@ namespace aya {
 	//	auto fbmp = FreeImage_Load(filetype,filename.c_str());
 	
 		unsigned int load_error = lodepng::load_file(img_bufferFile, filename);
-		if (load_error) throw std::runtime_error(lodepng_error_text(load_error));
+		if (load_error) {
+			std::cout << lodepng_error_text(load_error) << std::endl;
+			std::exit(-1);
+		};
 		load_error = lodepng::decode(img_bufferBMP,out_w,out_h,state,img_bufferFile);
-		if (load_error) throw std::runtime_error(lodepng_error_text(load_error));
+		if (load_error) {
+			std::cout << lodepng_error_text(load_error) << std::endl;
+			std::exit(-1);
+		};
 
 		/*if(!fbmp) {
 			std::printf("aya::CPhoto::CPhoto(fname,pal): error: unable to read file %s\n",
