@@ -15,8 +15,9 @@ CXXFLAGS += -Wnull-dereference
 #LDFLAGS	:= -lfreeimage -lz
 LDFLAGS := -L./deps/scl/libscl/bin
 LDFLAGS	+= -lz -ltinyxml -lscl
+LIBSCL_A := ./deps/scl/libscl/bin/libscl.a
 
-# output
+# output --------------------------------------------------------------------@/
 OBJ_DIR := build
 SRC_DIR := source
 OUTPUT  := bin/aya.exe
@@ -30,9 +31,9 @@ DEPS := $(OBJS:.o=.d)
 
 -include $(DEPS)
 
-all: $(OUTPUT)
+all: $(LIBSCL_A) $(OUTPUT)
 
-# building
+# building ------------------------------------------------------------------@/
 $(OUTPUT): $(OBJS)
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
@@ -41,6 +42,9 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	ccache $(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(LIBSCL_A):
+	make -C deps/scl
 
 clean:
 	rm -rf build/*.o build/*.d $(OUTPUT)

@@ -1,5 +1,4 @@
 #include <aya.h>
-#include <zlib.h>
 
 #include <algorithm>
 #include <deque>
