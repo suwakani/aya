@@ -31,7 +31,7 @@ DEPS := $(OBJS:.o=.d)
 
 -include $(DEPS)
 
-all: $(LIBSCL_A) $(OUTPUT)
+all: $(LIBSCL_A) .WAIT $(OUTPUT)
 
 # building ------------------------------------------------------------------@/
 $(OUTPUT): $(OBJS)
