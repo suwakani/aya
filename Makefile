@@ -4,7 +4,7 @@ CC	:= clang
 
 CBASEFLAGS	:= -MMD -MP -O2
 CBASEFLAGS	+= -Wall -Wshadow -Werror
-CBASEFLAGS	+= -Iinclude -I./deps/scl/include
+CBASEFLAGS	+= -Iinclude -I./deps/scl/libscl/include
 
 CFLAGS := $(CBASEFLAGS)
 
@@ -13,7 +13,8 @@ CXXFLAGS += $(CBASEFLAGS)
 CXXFLAGS += -Wnull-dereference
 
 #LDFLAGS	:= -lfreeimage -lz
-LDFLAGS	:= -lz -ltinyxml
+LDFLAGS := -L./deps/scl/libscl/bin
+LDFLAGS	+= -lz -ltinyxml -lscl
 
 # output
 OBJ_DIR := build

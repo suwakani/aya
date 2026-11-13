@@ -53,19 +53,19 @@ namespace SPDHuffman {
 	};
 };
 
-auto spd_huffpack(scl::blob& _srcblob) -> scl::blob {
+auto spd_huffpack(scl::Blob& _srcblob) -> scl::Blob {
 	using Node = SPDHuffman::Node;
 	using Word = SPDHuffman::Word;
 	using SharedNode = SPDHuffman::SharedNode;
 	
-	scl::blob srcblob(_srcblob);
+	scl::Blob srcblob(_srcblob);
 	srcblob.pad(sizeof(Word));
 
 	const size_t src_size = srcblob.size();
 	const size_t src_sizeWord = src_size / sizeof(Word);
-	scl::blob blobAll;
-	scl::blob blobHeader;
-	scl::blob blobData;
+	scl::Blob blobAll;
+	scl::Blob blobHeader;
+	scl::Blob blobData;
 
 	auto src_at = [&](size_t idx) constexpr {
 		return srcblob.data<Word*>()[idx];
@@ -167,9 +167,9 @@ auto spd_huffpack(scl::blob& _srcblob) -> scl::blob {
 	if(bitstream_idx != 0) bitstream_flush();
 
 	// create header ------------------------------------@/
-	scl::blob blobHeader_name;
-	scl::blob blobHeader_len;
-	scl::blob blobHeader_freq;
+	scl::Blob blobHeader_name;
+	scl::Blob blobHeader_len;
+	scl::Blob blobHeader_freq;
 	int blobHeader_len_buf = 0;
 	bool blobHeader_len_doFlush = false;
 
@@ -219,10 +219,10 @@ auto spd_huffpack(scl::blob& _srcblob) -> scl::blob {
 	return blobAll;
 }
 
-auto aya::compress(scl::blob& srcblob, bool do_compress) -> scl::blob {
+auto aya::compress(scl::Blob& srcblob, bool do_compress) -> scl::Blob {
 	return srcblob.compress_raw(do_compress);
 }
-auto aya::compress_spd(scl::blob& srcblob, bool do_compress) -> scl::blob {
+auto aya::compress_spd(scl::Blob& srcblob, bool do_compress) -> scl::Blob {
 	/*
 		* .SPD (sadza teahouse packed data):
 		* 4 bytes size
@@ -249,9 +249,9 @@ auto aya::compress_spd(scl::blob& srcblob, bool do_compress) -> scl::blob {
 		  raw command, *and* its length is >= 3.
 	*/
 
-	scl::blob blobAll;
-	scl::blob blobHeader;
-	scl::blob blobData;
+	scl::Blob blobAll;
+	scl::Blob blobHeader;
+	scl::Blob blobData;
 
 	const size_t src_size = srcblob.size();
 
@@ -297,7 +297,7 @@ auto aya::compress_spd(scl::blob& srcblob, bool do_compress) -> scl::blob {
 		}
 
 		// write command --------------------------------@/
-		scl::blob blobCmdData;
+		scl::Blob blobCmdData;
 		size_t cmd_len = 0;
 		size_t cmd_name = 0;
 		constexpr int cmdmode_shift = 13;

@@ -220,7 +220,7 @@ int main(int argc,const char* argv[]) {
 	if(!param_exportpal_filename.empty()) {
 		//auto pal_format = param_exportpal_format;
 		auto pic = aya::CPhoto(param_srcfile,do_palette);
-		scl::blob pal_blob;
+		scl::Blob pal_blob;
 		for(int i=0; i<256; i++) {
 			pal_blob.write_u8(pic.palet_get(i).r);
 			pal_blob.write_u8(pic.palet_get(i).g);

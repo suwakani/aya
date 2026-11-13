@@ -399,9 +399,9 @@ namespace aya {
 		return hash;
 	}
 
-	auto CPhoto::convert_rawPGI(int format) const -> scl::blob {
+	auto CPhoto::convert_rawPGI(int format) const -> scl::Blob {
 		auto format_id = patchu_graphfmt::getID(format);
-		scl::blob blob_bmp;
+		scl::Blob blob_bmp;
 
 		switch(format_id) {
 			case patchu_graphfmt::i8: {
@@ -453,9 +453,9 @@ namespace aya {
 
 		return blob_bmp;
 	}
-	auto CPhoto::convert_raw(int format) const -> scl::blob {
+	auto CPhoto::convert_raw(int format) const -> scl::Blob {
 		auto format_id = marisa_graphfmt::getID(format);
-		scl::blob blob_bmp;
+		scl::Blob blob_bmp;
 
 		switch(format_id) {
 			case marisa_graphfmt::i8: {
@@ -499,9 +499,9 @@ namespace aya {
 
 		return blob_bmp;
 	}
-	auto CPhoto::convert_rawNGI(int format) const -> scl::blob {
+	auto CPhoto::convert_rawNGI(int format) const -> scl::Blob {
 		auto format_id = narumi_graphfmt::getID(format);
-		scl::blob blob_bmp;
+		scl::Blob blob_bmp;
 
 		switch(format_id) {
 			case narumi_graphfmt::i4: {
@@ -540,9 +540,9 @@ namespace aya {
 
 		return blob_bmp;
 	}
-	auto CPhoto::convert_rawAGI(int format) const -> scl::blob {
+	auto CPhoto::convert_rawAGI(int format) const -> scl::Blob {
 		auto format_id = alice_graphfmt::getID(format);
-		scl::blob blob_bmp;
+		scl::Blob blob_bmp;
 
 		switch(format_id) {
 			case alice_graphfmt::i4: {
@@ -581,9 +581,9 @@ namespace aya {
 
 		return blob_bmp;
 	}
-	auto CPhoto::convert_rawHGI(int format) const -> scl::blob {
+	auto CPhoto::convert_rawHGI(int format) const -> scl::Blob {
 		auto format_id = hourai_graphfmt::getID(format);
-		scl::blob blob_bmp;
+		scl::Blob blob_bmp;
 
 		switch(format_id) {
 			case hourai_graphfmt::i2: {
@@ -612,10 +612,10 @@ namespace aya {
 
 		return blob_bmp;
 	}
-	auto CPhoto::convert_twiddled(int format) const -> scl::blob {
+	auto CPhoto::convert_twiddled(int format) const -> scl::Blob {
 		auto format_id = marisa_graphfmt::getID(format);
-		scl::blob blob_output;
-		scl::blob blob_curdot;
+		scl::Blob blob_output;
+		scl::Blob blob_curdot;
 
 		// bitmap writing fns ---------------------------@/
 		switch(format_id) {
@@ -697,7 +697,7 @@ namespace aya {
 		return blob_output;
 	}
 
-	auto CPhoto::convert_pngIndexed() -> scl::blob {
+	auto CPhoto::convert_pngIndexed() -> scl::Blob {
 		// create vector for lodepng --------------------@/
 		std::vector<unsigned char> dotbuffer(dimensions() * 4);
 		for(int i=0; i<dimensions(); i++) {
@@ -718,7 +718,7 @@ namespace aya {
 			std::exit(-1);
 		}
 
-		return scl::blob(filebuffer);
+		return scl::Blob(filebuffer);
 	};
 };
 
