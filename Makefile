@@ -44,7 +44,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	ccache $(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(LIBSCL_A):
-	make -C deps/scl
+	make --no-print-directory -C deps/scl
 
 clean:
 	rm -rf build/*.o build/*.d $(OUTPUT)
